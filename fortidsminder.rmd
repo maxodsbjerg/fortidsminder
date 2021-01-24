@@ -1,0 +1,93 @@
+---
+title: "Fortidsminder"
+author: "Max Odsbjerg Pedersen"
+date: "24/1/2021"
+output: html_document
+---
+#Load packages
+```{r message=FALSE}
+library(leaflet)
+library(tidyverse)
+```
+
+# Load data
+
+```{r message=FALSE}
+minder <- read_csv("data/sevanlaeg_all_4326.csv")
+```
+
+
+# Changing x and y to lon and lat
+
+```{r}
+minder %>% 
+  rename(lon = x, lat = y)-> minder
+```
+
+
+```{r}
+minder %>% 
+  mutate(sevaerdighedsklasse = str_replace(sevaerdighedsklasse, "1", "et")) %>% 
+  mutate(sevaerdighedsklasse = str_replace(sevaerdighedsklasse, "2", "to")) %>% 
+  mutate(sevaerdighedsklasse = str_replace(sevaerdighedsklasse, "3", "tre")) -> minder
+```
+
+
+# Exploring data:
+
+
+```{r}
+minder %>% 
+  count(sevaerdighedsklasse, sort = TRUE)
+```
+
+# Map
+
+
+# Creating html-snippets for the pop-ups and title
+
+```{r}
+minder %>% 
+  mutate(content = paste0('<b>Kategori:</b> ', anlaegsbetydning, '<br>', '<b>Datering: </b>', datering, '<br>', '<b>Stednavn:</b> ', stednavn, '<br>','<b>Seværdighedsklasse:</b> ', sevaerdighedsklasse, '<br>', '<a href="',url, '" target="_blank">Læs mere hos Slots- og Kulturarvsstyrelsen</a>')) -> minder
+```
+
+```{r}
+title_html <- '<div style="width: 400px;"><h1 style="font-size: 16px;">Seværdige fortidsminder i Danmark</h1> <p style="font-size: 12px;"> Baseret på data fra <a href="http://www.kulturarv.dk/fundogfortidsminder/Download/">Slots- og Kulturstyrelsen</a></p><p style="color:red;font-size: 12px;">Advarsel: Slots- og Kulturarvsstyrelsen har pt.(24-01-2021) problemer med downloadfunktion, hvilket forårsager at data, der er brugt til denne side er ufuldstændigt</p> <p style="font-size: 12px;">Tallene på markørene angiver mindernes seværdighedsklasse vurderet af Slots- og Kulturarvsstyrelse</div>'
+```
+
+# Icons
+
+
+```{r}
+sevaer_icons <- iconList(
+  et = makeIcon("https://fortid.odsbjerg.dk/marker_1.png", 18, 18),
+ to = makeIcon("https://fortid.odsbjerg.dk/marker_2.png", 18, 18),
+ tre = makeIcon("https://fortid.odsbjerg.dk/marker_3.png", 18, 18)
+)
+
+```
+
+
+
+
+```{r}
+minder %>% 
+     leaflet() %>%
+     addTiles() %>%
+     addMarkers(~lon, ~lat, label = ~anlaegsbetydning, popup = ~content, icon = ~sevaer_icons[sevaerdighedsklasse]) %>%
+     addControl(title_html, position = "bottomright") -> m
+```
+
+
+
+
+```{r}
+library(htmlwidgets)
+saveWidget(m, file="index.html")
+```
+
+
+
+
+
+
