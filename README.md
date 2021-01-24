@@ -1,2 +1,2 @@
 # fortidsminder
-Creating map og "see-worthy" sites from data found at Slots- og KUlturarvsstyrelsen website
+Creating map og "see-worthy" sites from data found at Slots- og Kulturarvsstyrelsen website
